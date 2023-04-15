@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:state_mangement/components/hamburguer_menu.dart';
 import 'package:state_mangement/models/client.dart';
 import 'package:state_mangement/models/client_type.dart';
+import 'package:state_mangement/models/client_types.dart';
+import 'package:state_mangement/models/clients.dart';
 
 class ClientScreen extends StatefulWidget {
   const ClientScreen({required this.title, super.key});
@@ -12,32 +15,6 @@ class ClientScreen extends StatefulWidget {
 }
 
 class _ClientScreenState extends State<ClientScreen> {
-  List<Client> clients = [
-    Client(
-        name: "Geralt",
-        email: "geralt@gmail.com",
-        type: ClientType(name: "Platinum", icon: Icons.credit_card)),
-    Client(
-        name: "Paul",
-        email: "paul@gmail.com",
-        type: ClientType(name: "Golden", icon: Icons.card_membership)),
-    Client(
-        name: "Cain",
-        email: "cain@gmail.com",
-        type: ClientType(name: "Titanium", icon: Icons.credit_score)),
-    Client(
-        name: "Juan",
-        email: "juan@gmail.com",
-        type: ClientType(name: "Diamond", icon: Icons.diamond)),
-  ];
-
-  List<ClientType> types = [
-    ClientType(name: "Platinum", icon: Icons.credit_card),
-    ClientType(name: "Golden", icon: Icons.card_membership_rounded),
-    ClientType(name: "Titanium", icon: Icons.credit_score),
-    ClientType(name: "Diamond", icon: Icons.diamond),
-  ];
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -45,39 +22,39 @@ class _ClientScreenState extends State<ClientScreen> {
         title: Text(widget.title),
       ),
       drawer: const HamburguerMenu(),
-      body: ListView.builder(
-          itemCount: clients.length,
-          itemBuilder: (context, index) {
-            return Dismissible(
-              key: UniqueKey(),
-              background: Container(color: Colors.red),
-              child: ListTile(
-                leading: Icon(clients[index].type.icon),
-                title: Text(clients[index].name),
-                iconColor: Colors.indigo,
-              ),
-              onDismissed: (direct) {
-                setState(() {
-                  clients.removeAt(index);
-                });
-              },
-            );
-          }),
+      body: Consumer<Clients>(
+          builder: (BuildContext context, Clients clients, Widget? widget) {
+        return ListView.builder(
+            itemCount: clients.list.length,
+            itemBuilder: (context, index) {
+              return Dismissible(
+                  key: UniqueKey(),
+                  background: Container(color: Colors.red),
+                  child: ListTile(
+                    leading: Icon(clients.list[index].type.icon),
+                    title: Text(clients.list[index].name),
+                    iconColor: Colors.indigo,
+                  ),
+                  onDismissed: (direct) => clients.remove(index));
+            });
+      }),
       floatingActionButton: FloatingActionButton(
         backgroundColor: Colors.indigo,
         onPressed: () {
-          createType(context);
+          createClient(context);
         },
-        tooltip: "Add Type",
+        tooltip: "Add Client",
         child: const Icon(Icons.add),
       ),
     );
   }
 
-  void createType(BuildContext context) {
+  void createClient(BuildContext context) {
     TextEditingController nameInput = TextEditingController();
     TextEditingController emailInput = TextEditingController();
-    ClientType dropDownValue = types[0];
+
+    ClientTypes types = Provider.of<ClientTypes>(context, listen: false);
+    ClientType dropDownValue = types.list[0];
 
     showDialog(
         context: context,
@@ -120,7 +97,7 @@ class _ClientScreenState extends State<ClientScreen> {
                             color: Colors.indigo,
                           ),
                           value: dropDownValue,
-                          items: types.map((ClientType type) {
+                          items: types.list.map((ClientType type) {
                             return DropdownMenuItem<ClientType>(
                               value: type,
                               child: Text(type.name),
@@ -137,14 +114,19 @@ class _ClientScreenState extends State<ClientScreen> {
               ),
             ),
             actions: [
-              TextButton(
-                child: const Text("Save"),
-                onPressed: () async {
-                  setState(() {
-                    clients.add(Client(name: nameInput.text, email: emailInput.text, type: dropDownValue));
-                  });
-                  Navigator.pop(context);
-                },
+              Consumer<Clients>(
+                builder:
+                    (BuildContext context, Clients clients, Widget? widget) =>
+                        TextButton(
+                  child: const Text("Save"),
+                  onPressed: () async {
+                    clients.add(Client(
+                        name: nameInput.text,
+                        email: emailInput.text,
+                        type: dropDownValue));
+                    Navigator.pop(context);
+                  },
+                ),
               ),
               TextButton(
                 child: const Text("Cancel"),

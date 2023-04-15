@@ -4,7 +4,7 @@ Okay, this is the key point for anyone to become a real Flutter Developer.
 
 Knowing State Management is crucial for making and understanding good and large scale apps.
 
-## Alura Side // TODO: TAKE IT OUT IF NO CHANGES ARE MADE IN THE LONG-RUN
+## Alura Side // TODO: EVOLVE THIS PROJECT INTO SOMETHING OF MINE
 
 ### 🛠️ This project is part of this [Alura course.](https://github.com/alura-cursos/alura_flutter_client_control/)
 
